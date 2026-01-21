@@ -1,6 +1,6 @@
-package airline;
+package com.company;
 
-import airline.controller.ConsoleController;
+import com.company.controllers.ConsoleController;
 
 public class Main {
     public static void main(String[] args) {
