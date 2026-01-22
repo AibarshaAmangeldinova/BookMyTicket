@@ -1,25 +1,28 @@
-package com.company.services;
+package com.company.repositories;
 
-import com.company.models.Flight;
-import com.company.repositories.BookingRepository;
-import com.company.repositories.FlightRepository;
+import com.company.data.PostgresDB;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 
-public class BookingService {
+public class BookingRepository {
 
-    private final FlightRepository flightRepo = new FlightRepository();
-    private final BookingRepository bookingRepo = new BookingRepository();
+    PostgresDB db = new PostgresDB();
 
-    public void bookFlight(int userId, Flight flight, int seats) {
+    public void bookTicket(int flightId, String name) {
+        String sql = "INSERT INTO bookings(flight_id, passenger_name) VALUES (?, ?)";
 
-        if (flight.getAvailableSeats() < seats) {
-            throw new RuntimeException("Not enough seats");
+        try (Connection con = db.connect();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, flightId);
+            ps.setString(2, name);
+            ps.executeUpdate();
+
+            System.out.println("Ticket booked successfully!");
+
+        } catch (Exception e) {
+            System.out.println(e.getMessage());
         }
-
-        flightRepo.updateSeats(flight.getId(), seats);
-        bookingRepo.save(userId, flight.getId(), seats);
-
-        System.out.println("✅ Booking successful!");
-        System.out.println("Total price: " + flight.getPrice() * seats);
     }
 }
 
