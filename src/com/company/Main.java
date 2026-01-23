@@ -1,10 +1,14 @@
-package airline;
+package com.company;
 
-import airline.controller.ConsoleController;
+import com.company.controllers.TestController;
+
 
 public class Main {
+
+    // Application entry point
     public static void main(String[] args) {
-        new ConsoleController().start();
+        new TestController().start();
+
     }
 }
 
