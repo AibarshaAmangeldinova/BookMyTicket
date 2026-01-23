@@ -1,27 +1,37 @@
 package com.company.repositories;
 
 import com.company.data.PostgresDB;
+import com.company.models.Booking;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 
 public class BookingRepository {
 
-    PostgresDB db = new PostgresDB();
+    private Connection con = PostgresDB.getConnection();
 
-    public void bookTicket(int flightId, String name) {
-        String sql = "INSERT INTO bookings(flight_id, passenger_name) VALUES (?, ?)";
+    public void save(Booking booking) {
 
-        try (Connection con = db.connect();
-             PreparedStatement ps = con.prepareStatement(sql)) {
+        String sql = """
+                INSERT INTO bookings
+                (flight_id, passenger_name, seat_number, ticket_class, document_type)
+                VALUES (?, ?, ?, ?, ?)
+                """;
 
-            ps.setInt(1, flightId);
-            ps.setString(2, name);
+        try {
+            PreparedStatement ps = con.prepareStatement(sql);
+            ps.setInt(1, booking.flightId);
+            ps.setString(2, booking.passengerName);
+            ps.setString(3, booking.seatNumber);
+            ps.setString(4, booking.ticketClass);
+            ps.setString(5, booking.documentType);
+
             ps.executeUpdate();
-
-            System.out.println("Ticket booked successfully!");
+            System.out.println("Booking saved successfully!");
 
         } catch (Exception e) {
-            System.out.println(e.getMessage());
+            e.printStackTrace();
         }
     }
 }
+

@@ -1,44 +1,39 @@
 package com.company.controllers;
 
+import com.company.models.Booking;
 import com.company.repositories.BookingRepository;
-import com.company.repositories.Flight_Repository;
+import com.company.repositories.FlightRepository;
 
 import java.util.Scanner;
 
 public class ConsoleController {
 
+    private final FlightRepository flightRepo = new FlightRepository();
+    private final BookingRepository bookingRepo = new BookingRepository();
+    private final Scanner scanner = new Scanner(System.in);
+
     public void start() {
-        Scanner sc = new Scanner(System.in);
 
-        Flight_Repository flightRepo = new Flight_Repository();
-        BookingRepository bookingRepo = new BookingRepository();
+        flightRepo.showAllFlights();
 
-        while (true) {
-            System.out.println("\n1. Show flights");
-            System.out.println("2. Buy ticket");
-            System.out.println("0. Exit");
+        Booking booking = new Booking();
 
-            int choice = sc.nextInt();
+        System.out.print("Enter flight id: ");
+        booking.flightId = scanner.nextInt();
+        scanner.nextLine();
 
-            if (choice == 1) {
-                flightRepo.showFlights();
-            }
+        System.out.print("Passenger name: ");
+        booking.passengerName = scanner.nextLine();
 
-            if (choice == 2) {
-                System.out.print("Enter flight id: ");
-                int id = sc.nextInt();
-                sc.nextLine();
+        System.out.print("Seat number: ");
+        booking.seatNumber = scanner.nextLine();
 
-                System.out.print("Enter passenger name: ");
-                String name = sc.nextLine();
+        System.out.print("Ticket class: ");
+        booking.ticketClass = scanner.nextLine();
 
-                bookingRepo.bookTicket(id, name);
-            }
+        System.out.print("Document type: ");
+        booking.documentType = scanner.nextLine();
 
-            if (choice == 0) {
-                break;
-            }
-        }
+        bookingRepo.save(booking);
     }
 }
-

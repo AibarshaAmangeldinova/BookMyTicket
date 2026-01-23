@@ -4,7 +4,7 @@ import com.company.controllers.ConsoleController;
 
 public class Main {
     public static void main(String[] args) {
-        new ConsoleController().start();
+        ConsoleController controller = new ConsoleController();
+        controller.start();
     }
 }
-
