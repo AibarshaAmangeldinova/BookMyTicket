@@ -1,25 +1,33 @@
 package com.company;
 
-import com.company.controllers.UserController;
-import com.company.controllers.interfaces.IUserController;
-import com.company.data.PostgresDB;
-import com.company.data.interfaces.IDB;
-import com.company.repositories.UserRepository;
-import com.company.repositories.interfaces.IUserRepository;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 
 public class Main {
-
     public static void main(String[] args) {
-        // Here you specify which DB and UserRepository to use
-        // And changing DB should not affect to whole code
-        IDB db = new PostgresDB("jdbc:postgresql://localhost:5432", "postgres", "0000", "somedb");
-        IUserRepository repo = new UserRepository(db);
-        IUserController controller = new UserController(repo);
 
-        MyApplication app = new MyApplication(controller);
+        String url = "jdbc:postgresql://localhost:5434/BookMyTicket";
+        String user = "postgres";
+        String password = "0000";
 
-        app.start();
+        try {
+            Connection con = DriverManager.getConnection(url, user, password);
 
-        db.close();
+            String sql = "INSERT INTO users(username, password) VALUES (?, ?)";
+
+            PreparedStatement st = con.prepareStatement(sql);
+            st.setString(1, "testuser");
+            st.setString(2, "1234");
+            st.executeUpdate();
+
+            System.out.println("DONE ✅ INSERT WORKED");
+
+            st.close();
+            con.close();
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 }
