@@ -1,4 +1,4 @@
-package com.company.models;
+package models;
 
 public class Flight {
     public int id;

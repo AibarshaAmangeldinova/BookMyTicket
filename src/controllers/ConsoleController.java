@@ -1,5 +1,4 @@
-package com.company.controllers;
-
+package controllers;
 import com.company.repositories.BookingRepository;
 import com.company.repositories.Flight_Repository;
 

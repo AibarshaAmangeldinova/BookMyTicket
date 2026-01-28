@@ -1,4 +1,4 @@
-package com.company.repositories;
+package repositories;
 
 import com.company.data.PostgresDB;
 import java.sql.*;
