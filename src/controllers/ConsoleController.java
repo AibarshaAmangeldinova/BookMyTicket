@@ -37,4 +37,3 @@ public class ConsoleController {
         bookingRepo.save(booking);
     }
 }
-//quentine
