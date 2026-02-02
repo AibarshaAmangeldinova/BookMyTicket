@@ -13,3 +13,4 @@ public class Flight {
         this.price = price;
     }
 }
+// edited by Mirlan
