@@ -1,44 +1,53 @@
 package controllers;
+
 import com.company.repositories.BookingRepository;
 import com.company.repositories.Flight_Repository;
-
 import java.util.Scanner;
 
 public class ConsoleController {
 
     public void start() {
-        Scanner sc = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
 
-        Flight_Repository flightRepo = new Flight_Repository();
-        BookingRepository bookingRepo = new BookingRepository();
+        Flight_Repository flightRepository = new Flight_Repository();
+        BookingRepository bookingRepository = new BookingRepository();
 
-        while (true) {
-            System.out.println("\n1. Show flights");
-            System.out.println("2. Buy ticket");
-            System.out.println("0. Exit");
+        boolean running = true;
 
-            int choice = sc.nextInt();
+        while (running) {
+            showMenu();
+            int choice = scanner.nextInt();
+            scanner.nextLine();
 
-            if (choice == 1) {
-                flightRepo.showFlights();
-            }
+            switch (choice) {
+                case 1:
+                    flightRepository.showFlights();
+                    break;
 
-            if (choice == 2) {
-                System.out.print("Enter flight id: ");
-                int id = sc.nextInt();
-                sc.nextLine();
+                case 2:
+                    System.out.print("Enter flight id: ");
+                    int id = scanner.nextInt();
+                    scanner.nextLine();
 
-                System.out.print("Enter passenger name: ");
-                String name = sc.nextLine();
+                    System.out.print("Enter passenger name: ");
+                    String name = scanner.nextLine();
 
-                bookingRepo.bookTicket(id, name);
-            }
+                    bookingRepository.bookTicket(id, name);
+                    break;
 
-            if (choice == 0) {
-                break;
+                case 0:
+                    running = false;
+                    break;
+
+                default:
+                    System.out.println("Invalid option");
             }
         }
     }
-}
 
-// test
+    private void showMenu() {
+        System.out.println("\n1. Show flights");
+        System.out.println("2. Buy ticket");
+        System.out.println("0. Exit");
+    }
+}
