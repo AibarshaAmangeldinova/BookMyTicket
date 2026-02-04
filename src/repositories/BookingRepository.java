@@ -1,7 +1,7 @@
-package com.company.repositories;
+package repositories;
 
-import com.company.data.PostgresDB;
-import com.company.models.Booking;
+import data.PostgresDB;
+import models.Booking;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,11 +20,11 @@ public class BookingRepository {
 
         try {
             PreparedStatement ps = con.prepareStatement(sql);
-            ps.setInt(1, booking.flightId);
-            ps.setString(2, booking.passengerName);
-            ps.setString(3, booking.seatNumber);
-            ps.setString(4, booking.ticketClass);
-            ps.setString(5, booking.documentType);
+            ps.setInt(1, booking.getFlightId());
+            ps.setString(2, booking.getPassengerName());
+            ps.setString(3, booking.getSeatNumber());
+            ps.setString(4, booking.getTicketClass());
+            ps.setString(5, booking.getDocumentType());
 
             ps.executeUpdate();
             System.out.println("Booking saved successfully!");

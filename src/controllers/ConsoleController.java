@@ -1,9 +1,11 @@
-package com.company.controllers;
+package controllers;
 
-import com.company.models.Booking;
-import com.company.repositories.BookingRepository;
-import com.company.repositories.FlightRepository;
+import models.Booking;
+import models.Flight;
+import repositories.BookingRepository;
+import repositories.FlightRepository;
 
+import java.util.List;
 import java.util.Scanner;
 
 public class ConsoleController {
@@ -14,25 +16,33 @@ public class ConsoleController {
 
     public void start() {
 
-        flightRepo.showAllFlights();
+        List<Flight> flights = flightRepo.getAllFlights();
+        for (Flight flight : flights) {
+            System.out.println(
+                    flight.getId() + " | " +
+                            flight.getFromCity() + " -> " +
+                            flight.getToCity() + " | " +
+                            flight.getPrice()
+            );
+        }
 
         Booking booking = new Booking();
 
         System.out.print("Enter flight id: ");
-        booking.flightId = scanner.nextInt();
+        booking.setFlightId(scanner.nextInt());
         scanner.nextLine();
 
         System.out.print("Passenger name: ");
-        booking.passengerName = scanner.nextLine();
+        booking.setPassengerName(scanner.nextLine());
 
         System.out.print("Seat number: ");
-        booking.seatNumber = scanner.nextLine();
+        booking.setSeatNumber(scanner.nextLine());
 
         System.out.print("Ticket class: ");
-        booking.ticketClass = scanner.nextLine();
+        booking.setTicketClass(scanner.nextLine());
 
         System.out.print("Document type: ");
-        booking.documentType = scanner.nextLine();
+        booking.setDocumentType(scanner.nextLine());
 
         bookingRepo.save(booking);
     }
