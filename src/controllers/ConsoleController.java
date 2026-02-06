@@ -73,6 +73,9 @@ public class ConsoleController {
         b.seatNumber = seatNumber;
         b.ticketClass = ticketClass;
         b.documentType = documentType;
+        b.phone = phone;
+        b.documentNumber = documentNumber;
+
 
         cashier.confirm();
         int bookingId = bookingService.bookTicket(b);
