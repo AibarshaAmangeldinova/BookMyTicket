@@ -45,7 +45,8 @@ public class FlightRepository {
             SELECT f.id, f.origin, f.destination, COALESCE(c.name,'-') AS category, f.price
             FROM flights f
             LEFT JOIN flight_categories c ON c.id = f.category_id
-            ORDER BY f.id
+            ORDER BY f.id ASC
+            
         """;
         List<String[]> rows = new ArrayList<>();
         try (Connection con = Db.getInstance().getConnection();
