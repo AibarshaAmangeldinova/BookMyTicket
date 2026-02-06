@@ -30,24 +30,22 @@ public class BookingRepository {
 
     public int saveAndReturnId(Booking b) {
         String sql = """
-            INSERT INTO bookings
-            (flight_id, first_name, last_name, phone,
-             document_type, document_number, seat_number, ticket_class)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            RETURNING id
-            """;
+    INSERT INTO bookings
+    (flight_id, passenger_name, seat_number, ticket_class, document_type)
+    VALUES (?, ?, ?, ?, ?)
+    RETURNING id
+    """;
+
 
         try (Connection con = PostgresDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, b.flightId);
-            ps.setString(2, b.firstName);
-            ps.setString(3, b.lastName);
-            ps.setString(4, b.phone);
+            ps.setString(2, b.passengerName);
+            ps.setString(3, b.seatNumber);
+            ps.setString(4, b.ticketClass);
             ps.setString(5, b.documentType);
-            ps.setString(6, b.documentNumber);
-            ps.setString(7, b.seatNumber);
-            ps.setString(8, b.ticketClass);
+
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt("id");

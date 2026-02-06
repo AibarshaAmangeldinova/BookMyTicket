@@ -49,11 +49,8 @@ public class ConsoleController {
         Integer flightId = InputUtils.readIntOrCancel(scanner, "Flight id");
         if (flightId == null) { cashier.cancelledByUser(); return; }
 
-        String firstName = InputUtils.readStringOrCancel(scanner, "First name");
-        if (firstName == null) { cashier.cancelledByUser(); return; }
-
-        String lastName = InputUtils.readStringOrCancel(scanner, "Last name");
-        if (lastName == null) { cashier.cancelledByUser(); return; }
+        String passengerName = InputUtils.readStringOrCancel(scanner, "Passenger name");
+        if (passengerName == null) { cashier.cancelledByUser(); return; }
 
         String phone = InputUtils.readStringOrCancel(scanner, "Phone");
         if (phone == null) { cashier.cancelledByUser(); return; }
@@ -72,13 +69,10 @@ public class ConsoleController {
 
         Booking b = new Booking();
         b.flightId = flightId;
-        b.firstName = firstName;
-        b.lastName = lastName;
-        b.phone = phone;
-        b.documentType = documentType;
-        b.documentNumber = documentNumber;
+        b.passengerName = passengerName;
         b.seatNumber = seatNumber;
         b.ticketClass = ticketClass;
+        b.documentType = documentType;
 
         cashier.confirm();
         int bookingId = bookingService.bookTicket(b);
