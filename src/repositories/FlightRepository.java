@@ -8,47 +8,56 @@ import java.sql.ResultSet;
 
 public class FlightRepository {
 
-    public void showAllFlights() {
-
-        String sql = "SELECT id, from_city, to_city, price FROM flights ORDER BY id";
+    public boolean exists(int id) {
+        String sql = "SELECT 1 FROM flights WHERE id = ?";
 
         try (Connection con = PostgresDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ResultSet rs = ps.executeQuery();
-
-            System.out.println("\n=== Available flights ===");
-
-            while (rs.next()) {
-                int id = rs.getInt("id");
-                String origin = rs.getString("from_city");
-                String destination = rs.getString("to_city");
-                int price = rs.getInt("price");
-
-                System.out.println(id + " | " + origin + " -> " + destination + " | " + price);
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
             }
-
         } catch (Exception e) {
-            System.out.println("Error loading flights");
+            System.out.println(" Flight exists error: " + e.getMessage());
+            return false;
         }
     }
 
-    public int getFlightPrice(int flightId) {
+    public void showAll() {
+        String sql = "SELECT id, origin, destination, price FROM flights ORDER BY id";
 
+        try (Connection con = PostgresDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
+
+            System.out.println("\n=== Available flights ===");
+            while (rs.next()) {
+                System.out.println(
+                        rs.getInt("id") + " | " +
+                                rs.getString("origin") + " -> " +
+                                rs.getString("destination") + " | " +
+                                rs.getInt("price")
+                );
+            }
+        } catch (Exception e) {
+            System.out.println(" Error loading flights: " + e.getMessage());
+        }
+    }
+
+    public Integer getPrice(int flightId) {
         String sql = "SELECT price FROM flights WHERE id = ?";
 
         try (Connection con = PostgresDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, flightId);
-
-            ResultSet rs = ps.executeQuery();
-            if (rs.next()) return rs.getInt("price");
-
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("price");
+            }
         } catch (Exception e) {
-            System.out.println("Error getting flight price");
+            System.out.println(" Error getting price: " + e.getMessage());
         }
-
-        return -1;
+        return null;
     }
 }
