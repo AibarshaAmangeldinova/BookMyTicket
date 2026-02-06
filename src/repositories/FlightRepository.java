@@ -8,7 +8,23 @@ import java.sql.ResultSet;
 
 public class FlightRepository {
 
-    public void showAllFlights() {
+    public boolean exists(int id) {
+        String sql = "SELECT 1 FROM flights WHERE id = ?";
+
+        try (Connection con = PostgresDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        } catch (Exception e) {
+            System.out.println("❌ Flight exists error: " + e.getMessage());
+            return false;
+        }
+    }
+
+    public void showAll() {
         String sql = "SELECT id, origin, destination, price FROM flights ORDER BY id";
 
         try (Connection con = PostgresDB.getConnection();
@@ -24,28 +40,24 @@ public class FlightRepository {
                                 rs.getInt("price")
                 );
             }
-
         } catch (Exception e) {
             System.out.println("❌ Error loading flights: " + e.getMessage());
         }
     }
 
-    public int getFlightPrice(int flightId) {
+    public Integer getPrice(int flightId) {
         String sql = "SELECT price FROM flights WHERE id = ?";
 
         try (Connection con = PostgresDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, flightId);
-
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt("price");
             }
-
         } catch (Exception e) {
-            System.out.println("❌ Error getting flight price: " + e.getMessage());
+            System.out.println("❌ Error getting price: " + e.getMessage());
         }
-
-        return -1;
+        return null;
     }
 }

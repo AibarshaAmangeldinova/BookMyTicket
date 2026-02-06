@@ -1,93 +1,112 @@
 package controllers;
 
-import models.Booking;
-import repositories.FlightRepository;
 import services.BookingService;
+import services.FlightService;
 import ui.CashierDialog;
 import utils.InputUtils;
+import utils.PrinterUtils;
 
 import java.util.Scanner;
 
 public class ConsoleController {
-
     private final Scanner scanner = new Scanner(System.in);
 
-    private final FlightRepository flightRepo = new FlightRepository();
+    private final FlightController flightController = new FlightController();
+    private final BookingController bookingController = new BookingController();
+    private final UserController userController = new UserController();
+
+    private final FlightService flightService = new FlightService();
     private final BookingService bookingService = new BookingService();
+
     private final CashierDialog cashier = new CashierDialog();
 
     public void start() {
         while (true) {
-            System.out.println("\n=== MENU ===");
-            System.out.println("1. Show flights");
-            System.out.println("2. Buy ticket");
-            System.out.println("3. Cancel booking");
-            System.out.println("0. Exit");
+            PrinterUtils.printMenu();
 
-            Integer choice = InputUtils.readIntOrCancel(scanner, "Choose option");
+            Integer choice = InputUtils.readInt(scanner, "Choose option", true);
             if (choice == null) continue;
 
-            if (choice == 1) {
-                flightRepo.showAllFlights();
-            } else if (choice == 2) {
-                buyTicketFlow();
-            } else if (choice == 3) {
-                cancelFlow();
-            } else if (choice == 0) {
-                System.out.println("Bye!");
-                break;
+            switch (choice) {
+                case 1 -> flightController.showFlights();
+                case 2 -> buyFlow();
+                case 3 -> cancelFlow();
+                case 0 -> {
+                    System.out.println("Bye!");
+                    return;
+                }
+                default -> System.out.println("Wrong option.");
             }
         }
     }
 
-    private void buyTicketFlow() {
-        cashier.hello();
+    private void buyFlow() {
+        cashier.greet();
+        flightController.showFlights();
+        cashier.explainFlights();
 
-        flightRepo.showAllFlights();
-        cashier.askFlight();
-
-        Integer flightId = InputUtils.readIntOrCancel(scanner, "Flight id");
+        Integer flightId = InputUtils.readInt(scanner, "Enter flight id", true);
         if (flightId == null) { cashier.cancelledByUser(); return; }
 
-        String passengerName = InputUtils.readStringOrCancel(scanner, "Passenger name");
-        if (passengerName == null) { cashier.cancelledByUser(); return; }
+        if (!flightService.flightExists(flightId)) {
+            System.out.println("❌ Flight not found.");
+            return;
+        }
 
-        String phone = InputUtils.readStringOrCancel(scanner, "Phone");
+        cashier.askPersonalData();
+
+        String firstName = InputUtils.readString(scanner, "First name", true);
+        if (firstName == null) { cashier.cancelledByUser(); return; }
+
+        String lastName = InputUtils.readString(scanner, "Last name", true);
+        if (lastName == null) { cashier.cancelledByUser(); return; }
+
+        String phone = InputUtils.readString(scanner, "Phone", true);
         if (phone == null) { cashier.cancelledByUser(); return; }
 
-        String documentType = InputUtils.readStringOrCancel(scanner, "Document type");
+        String documentType = InputUtils.readString(scanner, "Document type (PASSPORT / ID_CARD)", true);
         if (documentType == null) { cashier.cancelledByUser(); return; }
 
-        String documentNumber = InputUtils.readStringOrCancel(scanner, "Document number");
+        String documentNumber = InputUtils.readString(scanner, "Document number", true);
         if (documentNumber == null) { cashier.cancelledByUser(); return; }
 
-        String seatNumber = InputUtils.readStringOrCancel(scanner, "Seat number");
+        cashier.askSeatAndClass();
+
+        String seatNumber = InputUtils.readString(scanner, "Seat number (e.g. 8E)", true);
         if (seatNumber == null) { cashier.cancelledByUser(); return; }
 
-        String ticketClass = InputUtils.readStringOrCancel(scanner, "Ticket class");
+        String ticketClass = InputUtils.readString(scanner, "Ticket class (ECONOMY / BUSINESS)", true);
         if (ticketClass == null) { cashier.cancelledByUser(); return; }
 
-        Booking b = new Booking();
-        b.flightId = flightId;
-        b.passengerName = passengerName;
-        b.seatNumber = seatNumber;
-        b.ticketClass = ticketClass;
-        b.documentType = documentType;
-        b.phone = phone;
-        b.documentNumber = documentNumber;
+        int userId = userController.registerUser(firstName, lastName, phone, documentType, documentNumber);
+        if (userId == -1) {
+            System.out.println("❌ Could not create user.");
+            return;
+        }
 
+        String passengerName = firstName + " " + lastName;
 
-        cashier.confirm();
-        int bookingId = bookingService.bookTicket(b);
+        cashier.processing();
+        Integer bookingId = bookingController.bookTicket(flightId, passengerName, seatNumber, ticketClass, documentType, phone, documentNumber);
 
-        if (bookingId != -1) cashier.done(bookingId);
+        if (bookingId == null) {
+            cashier.seatTaken();
+            return;
+        }
+
+        cashier.success(bookingId);
     }
 
     private void cancelFlow() {
-        Integer bookingId = InputUtils.readIntOrCancel(scanner, "Booking id");
+        cashier.cancelBookingIntro();
+        Integer bookingId = InputUtils.readInt(scanner, "Enter booking id", true);
         if (bookingId == null) { cashier.cancelledByUser(); return; }
 
-        bookingService.cancelBooking(bookingId);
+        Integer refund = bookingService.cancelBookingAndGetRefund(bookingId);
+        if (refund == null) {
+            cashier.cancelNotFound();
+        } else {
+            cashier.cancelSuccess(refund);
+        }
     }
 }
-

@@ -2,45 +2,31 @@ package services;
 
 import models.Booking;
 import repositories.BookingRepository;
-import repositories.FlightRepository;
+import repositories.SeatRepository;
 
 public class BookingService {
 
     private final BookingRepository bookingRepo = new BookingRepository();
-    private final FlightRepository flightRepo = new FlightRepository();
+    private final SeatRepository seatRepo = new SeatRepository();
+    private final FlightService flightService = new FlightService();
 
     public int bookTicket(Booking b) {
-
-        if (bookingRepo.isSeatTaken(b.flightId, b.seatNumber)) {
-            System.out.println("❌ Sorry, this seat is already taken for this flight.");
+        if (seatRepo.isSeatTaken(b.flightId, b.seatNumber)) {
             return -1;
         }
-
-        int bookingId = bookingRepo.saveAndReturnId(b);
-
-        if (bookingId == -1) {
-            System.out.println("❌ Booking failed.");
-        }
-
-        return bookingId;
+        return bookingRepo.saveAndReturnId(b);
     }
 
-    public void cancelBooking(int bookingId) {
-        int flightId = bookingRepo.getFlightIdByBookingId(bookingId);
+    public Integer cancelBookingAndGetRefund(int bookingId) {
+        Integer flightId = bookingRepo.getFlightIdByBookingId(bookingId);
+        if (flightId == null) return null;
 
-        if (flightId == -1) {
-            System.out.println("❌ Booking not found.");
-            return;
-        }
+        Integer price = flightService.getPrice(flightId);
+        if (price == null) price = 0;
 
-        int price = flightRepo.getFlightPrice(flightId);
         boolean deleted = bookingRepo.deleteById(bookingId);
+        if (!deleted) return null;
 
-        if (deleted) {
-            System.out.println("✅ Booking cancelled.");
-            System.out.println("Refund: " + price + " KZT");
-        } else {
-            System.out.println("❌ Could not cancel booking.");
-        }
+        return price; // refund = price
     }
 }

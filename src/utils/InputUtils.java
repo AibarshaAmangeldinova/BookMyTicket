@@ -4,12 +4,12 @@ import java.util.Scanner;
 
 public class InputUtils {
 
-    public static Integer readIntOrCancel(Scanner sc, String prompt) {
+    public static Integer readInt(Scanner sc, String prompt, boolean allowCancel) {
         while (true) {
-            System.out.print(prompt + " (0 = cancel): ");
+            System.out.print(prompt + (allowCancel ? " (0 = cancel): " : ": "));
             String s = sc.nextLine().trim();
 
-            if (s.equals("0")) return null;
+            if (allowCancel && s.equals("0")) return null;
 
             try {
                 return Integer.parseInt(s);
@@ -19,12 +19,12 @@ public class InputUtils {
         }
     }
 
-    public static String readStringOrCancel(Scanner sc, String prompt) {
+    public static String readString(Scanner sc, String prompt, boolean allowCancel) {
         while (true) {
-            System.out.print(prompt + " (0 = cancel): ");
+            System.out.print(prompt + (allowCancel ? " (0 = cancel): " : ": "));
             String s = sc.nextLine().trim();
 
-            if (s.equals("0")) return null;
+            if (allowCancel && s.equals("0")) return null;
             if (!s.isEmpty()) return s;
 
             System.out.println("Cannot be empty.");
