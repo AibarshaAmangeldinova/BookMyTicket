@@ -1,32 +1,59 @@
 package services;
 
-import models.Booking;
-import repositories.BookingRepository;
-import repositories.SeatRepository;
+import dto.FullBookingDescription;
+import repositories.RepositoryFactory;
+
+import java.util.List;
 
 public class BookingService {
 
-    private final BookingRepository bookingRepo = new BookingRepository();
-    private final SeatRepository seatRepo = new SeatRepository();
-    private final FlightService flightService = new FlightService();
+    private final RepositoryFactory factory = new RepositoryFactory();
 
-    public int bookTicket(Booking b) {
-        if (seatRepo.isSeatTaken(b.flightId, b.seatNumber)) {
-            return -1;
-        }
-        return bookingRepo.saveAndReturnId(b);
+    private final var bookingRepo = factory.bookingRepo();
+    private final var userRepo = factory.userRepo();
+    private final var seatRepo = factory.seatRepo();
+    private final var flightRepo = factory.flightRepo();
+
+    public Integer bookTicket(int flightId,
+                              String firstName, String lastName,
+                              String phone,
+                              String docType, String docNumber,
+                              String seat, String ticketClass) {
+
+        // Business logic (criterion #1/#6): seat check
+        if (seatRepo.isSeatTaken(flightId, seat)) return null;
+
+        Integer userId = userRepo.createUser(firstName, lastName, phone, docType, docNumber);
+        if (userId == null) return null;
+
+        return bookingRepo.createBooking(flightId, userId, seat, ticketClass);
     }
 
-    public Integer cancelBookingAndGetRefund(int bookingId) {
-        Integer flightId = bookingRepo.getFlightIdByBookingId(bookingId);
+    public Integer cancelBookingAndRefund(int bookingId) {
+        Integer flightId = bookingRepo.getActiveFlightIdByBookingId(bookingId);
         if (flightId == null) return null;
 
-        Integer price = flightService.getPrice(flightId);
-        if (price == null) price = 0;
+        boolean ok = bookingRepo.cancelBooking(bookingId);
+        if (!ok) return null;
 
-        boolean deleted = bookingRepo.deleteById(bookingId);
-        if (!deleted) return null;
+        Integer price = flightRepo.getPrice(flightId);
+        return price == null ? 0 : price;
+    }
 
-        return price; // refund = price
+    public FullBookingDescription getFullBookingDescription(int bookingId) {
+        // JOIN endpoint (criterion #1)
+        return bookingRepo.getFullBooking(bookingId);
+    }
+
+    public void printManagerStats() {
+        int active = bookingRepo.countActiveBookings();
+
+        // Lambda expressions (criterion #3)
+        List<Integer> examplePrices = List.of(120000, 90000, 250000, 110000, 180000);
+        long expensive = examplePrices.stream().filter(p -> p >= 150000).count();
+
+        System.out.println("\n=== MANAGER STATS ===");
+        System.out.println("Active bookings: " + active);
+        System.out.println("Example: flights >= 150000 count: " + expensive);
     }
 }

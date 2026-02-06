@@ -1,7 +1,6 @@
 package repositories;
 
-import data.PostgresDB;
-import models.User;
+import data.Db;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -9,29 +8,32 @@ import java.sql.ResultSet;
 
 public class UserRepository {
 
-    public int saveAndReturnId(User u) {
+    public Integer createUser(String firstName, String lastName, String phone, String docType, String docNumber) {
         String sql = """
-            INSERT INTO users (first_name, last_name, phone, document_type, document_number)
-            VALUES (?, ?, ?, ?, ?)
+            INSERT INTO users(first_name, last_name, phone, document_type, document_number)
+            VALUES (?,?,?,?,?)
             RETURNING id
         """;
 
-        try (Connection con = PostgresDB.getConnection();
+        try (Connection con = Db.getInstance().getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
-            ps.setString(1, u.firstName);
-            ps.setString(2, u.lastName);
-            ps.setString(3, u.phone);
-            ps.setString(4, u.documentType);
-            ps.setString(5, u.documentNumber);
+            if (con == null) return null;
+
+            ps.setString(1, firstName);
+            ps.setString(2, lastName);
+            ps.setString(3, phone);
+            ps.setString(4, docType.trim().toUpperCase());
+            ps.setString(5, docNumber);
 
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) return rs.getInt("id");
             }
+
         } catch (Exception e) {
-            System.out.println(" Error saving user: " + e.getMessage());
+            System.out.println(" User save error: " + e.getMessage());
+            return null;
         }
-        return -1;
+        return null;
     }
 }
-

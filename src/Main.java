@@ -1,13 +1,8 @@
-import controllers.ConsoleController;
+import controllers.AppController;
 
 public class Main {
-
     public static void main(String[] args) {
-        startApplication();
-    }
-
-    private static void startApplication() {
-        ConsoleController controller = new ConsoleController();
-        controller.start();
+        new AppController().start();
     }
 }
+

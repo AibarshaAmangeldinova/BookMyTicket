@@ -1,10 +1,10 @@
 package models;
 
 public class Flight {
-
     public int id;
-    public String from;
-    public String to;
+    public String origin;
+    public String destination;
     public int price;
-
+    public int categoryId;
 }
+
