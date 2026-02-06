@@ -10,7 +10,7 @@ public class FlightRepository {
 
     public void showAllFlights() {
 
-        String sql = "SELECT id, origin, destination, price FROM flights ORDER BY id";
+        String sql = "SELECT id, from_city, to_city, price FROM flights ORDER BY id";
 
         try (Connection con = PostgresDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -21,8 +21,8 @@ public class FlightRepository {
 
             while (rs.next()) {
                 int id = rs.getInt("id");
-                String origin = rs.getString("origin");
-                String destination = rs.getString("destination");
+                String origin = rs.getString("from_city");
+                String destination = rs.getString("to_city");
                 int price = rs.getInt("price");
 
                 System.out.println(id + " | " + origin + " -> " + destination + " | " + price);
