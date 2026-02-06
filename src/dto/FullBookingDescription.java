@@ -18,27 +18,19 @@ public class FullBookingDescription {
     public String seatNumber;
     public String ticketClass;
 
-    public String toPrettyString() {
-        return """
-            Booking ID: %d
-            Status: %s
-            Created: %s
-
-            Passenger: %s
-            Phone: %s
-            Document: %s %s
-
-            Flight: %s -> %s
-            Category: %s
-            Seat: %s
-            Class: %s
-            Price: %d
-            """.formatted(
-                bookingId, status, createdAt,
-                passengerName, phone, documentType, documentNumber,
-                origin, destination, category,
-                seatNumber, ticketClass, price
-        );
+    public String pretty() {
+        return "\n=== FULL BOOKING (JOIN) ===\n" +
+                "Booking ID: " + bookingId + "\n" +
+                "Status: " + status + "\n" +
+                "Created: " + createdAt + "\n" +
+                "Passenger: " + passengerName + "\n" +
+                "Phone: " + phone + "\n" +
+                "Document: " + documentType + " " + documentNumber + "\n" +
+                "Flight: " + origin + " -> " + destination + "\n" +
+                "Category: " + category + "\n" +
+                "Seat: " + seatNumber + "\n" +
+                "Class: " + ticketClass + "\n" +
+                "Price: " + price + "\n" +
+                "==========================\n";
     }
 }
-

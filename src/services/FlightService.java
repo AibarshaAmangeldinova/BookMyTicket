@@ -2,35 +2,28 @@ package services;
 
 import repositories.FlightRepository;
 import repositories.RepositoryFactory;
-import utils.TextTable;
+import utils.Console;
+
+import java.util.Comparator;
+import java.util.List;
 
 public class FlightService {
+    private final FlightRepository flightRepo = new RepositoryFactory().flightRepo();
 
-    private final FlightRepository flightRepo;
+    public void printFlights() {
+        List<String[]> rows = flightRepo.getFlightsForTable();
 
-    public FlightService() {
-        // Factory pattern (criterion #2)
-        this.flightRepo = new RepositoryFactory().flightRepo();
-    }
+        // lambda: sort by price (business-friendly)
+        rows.sort(Comparator.comparingInt(r -> Integer.parseInt(r[4])));
 
-    public void showFlightsTable() {
-        var rows = flightRepo.getAllForTable();
-        TextTable.print(
-                new String[]{"ID", "Origin", "Destination", "Category", "Price"},
-                rows
-        );
-    }
-
-    public boolean flightExists(int flightId) {
-        return flightRepo.exists(flightId);
-    }
-
-    public Integer getPrice(int flightId) {
-        return flightRepo.getPrice(flightId);
+        Console.println("\nID | ORIGIN -> DESTINATION | CATEGORY | PRICE");
+        for (String[] r : rows) {
+            Console.println(r[0] + " | " + r[1] + " -> " + r[2] + " | " + r[3] + " | " + r[4]);
+        }
+        Console.println("");
     }
 
     public boolean addFlight(String origin, String destination, int price, String categoryName) {
         return flightRepo.addFlight(origin, destination, price, categoryName);
     }
 }
-

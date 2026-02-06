@@ -9,10 +9,13 @@ public class CurrentUser {
         role = r;
     }
 
-    public static String username() { return username; }
-    public static Role role() { return role; }
+    public static String getUsername() { return username; }
+    public static Role getRole() { return role; }
 
-    public static boolean hasRole(Role r) {
-        return role == r;
+    public static boolean hasAny(Role... roles) {
+        if (role == null) return false;
+        for (Role r : roles) if (role == r) return true;
+        return false;
     }
 }
+

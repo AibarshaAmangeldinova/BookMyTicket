@@ -1,22 +1,15 @@
 package security;
 
-import models.StaffAccount;
-import repositories.AuthRepository;
 import repositories.RepositoryFactory;
+import repositories.StaffRepository;
 
 public class AuthService {
-
-    private final AuthRepository repo;
-
-    public AuthService() {
-        this.repo = new RepositoryFactory().authRepo();
-    }
+    private final StaffRepository staffRepo = new RepositoryFactory().staffRepo();
 
     public boolean login(String username, String password) {
-        StaffAccount acc = repo.findByUsernameAndPassword(username, password);
-        if (acc == null) return false;
-
-        CurrentUser.set(acc.username, acc.role);
+        Role role = staffRepo.findRole(username, password);
+        if (role == null) return false;
+        CurrentUser.set(username, role);
         return true;
     }
 }
