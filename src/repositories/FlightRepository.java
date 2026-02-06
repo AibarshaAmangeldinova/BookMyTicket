@@ -19,7 +19,7 @@ public class FlightRepository {
                 return rs.next();
             }
         } catch (Exception e) {
-            System.out.println("❌ Flight exists error: " + e.getMessage());
+            System.out.println(" Flight exists error: " + e.getMessage());
             return false;
         }
     }
@@ -41,7 +41,7 @@ public class FlightRepository {
                 );
             }
         } catch (Exception e) {
-            System.out.println("❌ Error loading flights: " + e.getMessage());
+            System.out.println(" Error loading flights: " + e.getMessage());
         }
     }
 
@@ -56,7 +56,7 @@ public class FlightRepository {
                 if (rs.next()) return rs.getInt("price");
             }
         } catch (Exception e) {
-            System.out.println("❌ Error getting price: " + e.getMessage());
+            System.out.println(" Error getting price: " + e.getMessage());
         }
         return null;
     }

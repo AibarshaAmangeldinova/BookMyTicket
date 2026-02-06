@@ -32,7 +32,7 @@ public class BookingRepository {
                 if (rs.next()) return rs.getInt("id");
             }
         } catch (Exception e) {
-            System.out.println("❌ Error saving booking: " + e.getMessage());
+            System.out.println(" Error saving booking: " + e.getMessage());
         }
         return -1;
     }
@@ -49,7 +49,7 @@ public class BookingRepository {
                 if (rs.next()) return rs.getInt("flight_id");
             }
         } catch (Exception e) {
-            System.out.println("❌ Error finding booking: " + e.getMessage());
+            System.out.println(" Error finding booking: " + e.getMessage());
         }
         return null;
     }
@@ -64,7 +64,7 @@ public class BookingRepository {
             return ps.executeUpdate() > 0;
 
         } catch (Exception e) {
-            System.out.println("❌ Error deleting booking: " + e.getMessage());
+            System.out.println(" Error deleting booking: " + e.getMessage());
             return false;
         }
     }

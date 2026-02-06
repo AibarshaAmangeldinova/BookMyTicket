@@ -13,7 +13,7 @@ public class PostgresDB {
         try {
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (Exception e) {
-            System.out.println("❌ DB connection error: " + e.getMessage());
+            System.out.println(" DB connection error: " + e.getMessage());
             return null;
         }
     }

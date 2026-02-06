@@ -29,7 +29,7 @@ public class UserRepository {
                 if (rs.next()) return rs.getInt("id");
             }
         } catch (Exception e) {
-            System.out.println("❌ Error saving user: " + e.getMessage());
+            System.out.println(" Error saving user: " + e.getMessage());
         }
         return -1;
     }

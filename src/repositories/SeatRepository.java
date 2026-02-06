@@ -21,7 +21,7 @@ public class SeatRepository {
                 return rs.next();
             }
         } catch (Exception e) {
-            System.out.println("❌ Seat check error: " + e.getMessage());
+            System.out.println(" Seat check error: " + e.getMessage());
             return true;
         }
     }
