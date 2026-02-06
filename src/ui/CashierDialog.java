@@ -29,13 +29,13 @@ public class CashierDialog {
     }
 
     public void success(int bookingId) {
-        System.out.println("\nCashier: ✅ Booking successful!");
+        System.out.println("\nCashier:  Booking successful!");
         System.out.println("Cashier: Your booking ID is: " + bookingId);
         System.out.println("Cashier: Have a nice trip!");
     }
 
     public void seatTaken() {
-        System.out.println("\nCashier: ❌ Sorry, this seat is already taken for this flight.");
+        System.out.println("\nCashier:  Sorry, this seat is already taken for this flight.");
         System.out.println("Cashier: Please choose another seat and try again.");
     }
 
@@ -49,11 +49,11 @@ public class CashierDialog {
     }
 
     public void cancelSuccess(int refund) {
-        System.out.println("\nCashier: ✅ Booking cancelled.");
+        System.out.println("\nCashier:  Booking cancelled.");
         System.out.println("Cashier: Refund: " + refund + " KZT.");
     }
 
     public void cancelNotFound() {
-        System.out.println("\nCashier: ❌ Booking ID not found.");
+        System.out.println("\nCashier:  Booking ID not found.");
     }
 }

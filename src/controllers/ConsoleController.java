@@ -49,7 +49,7 @@ public class ConsoleController {
         if (flightId == null) { cashier.cancelledByUser(); return; }
 
         if (!flightService.flightExists(flightId)) {
-            System.out.println("❌ Flight not found.");
+            System.out.println(" Flight not found.");
             return;
         }
 
@@ -80,7 +80,7 @@ public class ConsoleController {
 
         int userId = userController.registerUser(firstName, lastName, phone, documentType, documentNumber);
         if (userId == -1) {
-            System.out.println("❌ Could not create user.");
+            System.out.println(" Could not create user.");
             return;
         }
 
