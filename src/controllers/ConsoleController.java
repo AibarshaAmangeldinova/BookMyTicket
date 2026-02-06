@@ -1,49 +1,96 @@
 package controllers;
 
 import models.Booking;
-import models.Flight;
-import repositories.BookingRepository;
 import repositories.FlightRepository;
+import services.BookingService;
+import ui.CashierDialog;
+import utils.InputUtils;
 
-import java.util.List;
 import java.util.Scanner;
 
 public class ConsoleController {
 
-    private final FlightRepository flightRepo = new FlightRepository();
-    private final BookingRepository bookingRepo = new BookingRepository();
     private final Scanner scanner = new Scanner(System.in);
 
+    private final FlightRepository flightRepo = new FlightRepository();
+    private final BookingService bookingService = new BookingService();
+    private final CashierDialog cashier = new CashierDialog();
+
     public void start() {
+        while (true) {
+            System.out.println("\n=== MENU ===");
+            System.out.println("1. Show flights");
+            System.out.println("2. Buy ticket");
+            System.out.println("3. Cancel booking");
+            System.out.println("0. Exit");
 
-        List<Flight> flights = flightRepo.getAllFlights();
-        for (Flight flight : flights) {
-            System.out.println(
-                    flight.getId() + " | " +
-                            flight.getFromCity() + " -> " +
-                            flight.getToCity() + " | " +
-                            flight.getPrice()
-            );
+            Integer choice = InputUtils.readIntOrCancel(scanner, "Choose option");
+            if (choice == null) continue;
+
+            if (choice == 1) {
+                flightRepo.showAllFlights();
+            } else if (choice == 2) {
+                buyTicketFlow();
+            } else if (choice == 3) {
+                cancelFlow();
+            } else if (choice == 0) {
+                System.out.println("Bye!");
+                break;
+            }
         }
+    }
 
-        Booking booking = new Booking();
+    private void buyTicketFlow() {
+        cashier.hello();
 
-        System.out.print("Enter flight id: ");
-        booking.setFlightId(scanner.nextInt());
-        scanner.nextLine();
+        flightRepo.showAllFlights();
+        cashier.askFlight();
 
-        System.out.print("Passenger name: ");
-        booking.setPassengerName(scanner.nextLine());
+        Integer flightId = InputUtils.readIntOrCancel(scanner, "Flight id");
+        if (flightId == null) { cashier.cancelledByUser(); return; }
 
-        System.out.print("Seat number: ");
-        booking.setSeatNumber(scanner.nextLine());
+        String firstName = InputUtils.readStringOrCancel(scanner, "First name");
+        if (firstName == null) { cashier.cancelledByUser(); return; }
 
-        System.out.print("Ticket class: ");
-        booking.setTicketClass(scanner.nextLine());
+        String lastName = InputUtils.readStringOrCancel(scanner, "Last name");
+        if (lastName == null) { cashier.cancelledByUser(); return; }
 
-        System.out.print("Document type: ");
-        booking.setDocumentType(scanner.nextLine());
+        String phone = InputUtils.readStringOrCancel(scanner, "Phone");
+        if (phone == null) { cashier.cancelledByUser(); return; }
 
-        bookingRepo.save(booking);
+        String documentType = InputUtils.readStringOrCancel(scanner, "Document type");
+        if (documentType == null) { cashier.cancelledByUser(); return; }
+
+        String documentNumber = InputUtils.readStringOrCancel(scanner, "Document number");
+        if (documentNumber == null) { cashier.cancelledByUser(); return; }
+
+        String seatNumber = InputUtils.readStringOrCancel(scanner, "Seat number");
+        if (seatNumber == null) { cashier.cancelledByUser(); return; }
+
+        String ticketClass = InputUtils.readStringOrCancel(scanner, "Ticket class");
+        if (ticketClass == null) { cashier.cancelledByUser(); return; }
+
+        Booking b = new Booking();
+        b.flightId = flightId;
+        b.firstName = firstName;
+        b.lastName = lastName;
+        b.phone = phone;
+        b.documentType = documentType;
+        b.documentNumber = documentNumber;
+        b.seatNumber = seatNumber;
+        b.ticketClass = ticketClass;
+
+        cashier.confirm();
+        int bookingId = bookingService.bookTicket(b);
+
+        if (bookingId != -1) cashier.done(bookingId);
+    }
+
+    private void cancelFlow() {
+        Integer bookingId = InputUtils.readIntOrCancel(scanner, "Booking id");
+        if (bookingId == null) { cashier.cancelledByUser(); return; }
+
+        bookingService.cancelBooking(bookingId);
     }
 }
+

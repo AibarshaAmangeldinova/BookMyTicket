@@ -1,38 +1,51 @@
 package repositories;
 
 import data.PostgresDB;
-import models.Flight;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
-import java.util.ArrayList;
-import java.util.List;
 
 public class FlightRepository {
 
-    private Connection con = PostgresDB.getConnection();
+    public void showAllFlights() {
+        String sql = "SELECT id, origin, destination, price FROM flights ORDER BY id";
 
-    public List<Flight> getAllFlights() {
-        List<Flight> flights = new ArrayList<>();
-        String sql = "SELECT * FROM flights";
+        try (Connection con = PostgresDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql);
+             ResultSet rs = ps.executeQuery()) {
 
-        try {
-            PreparedStatement ps = con.prepareStatement(sql);
-            ResultSet rs = ps.executeQuery();
-
-            System.out.println("Available flights:");
-
+            System.out.println("\n=== Available flights ===");
             while (rs.next()) {
-                flights.add(new Flight(rs.getInt("id"),
-                        rs.getString("from_city"),
-                        rs.getString("to_city"),
-                        rs.getInt("price")));
+                System.out.println(
+                        rs.getInt("id") + " | " +
+                                rs.getString("origin") + " -> " +
+                                rs.getString("destination") + " | " +
+                                rs.getInt("price")
+                );
             }
+
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("❌ Error loading flights: " + e.getMessage());
+        }
+    }
+
+    public int getFlightPrice(int flightId) {
+        String sql = "SELECT price FROM flights WHERE id = ?";
+
+        try (Connection con = PostgresDB.getConnection();
+             PreparedStatement ps = con.prepareStatement(sql)) {
+
+            ps.setInt(1, flightId);
+
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) return rs.getInt("price");
+            }
+
+        } catch (Exception e) {
+            System.out.println("❌ Error getting flight price: " + e.getMessage());
         }
 
-        return flights;
+        return -1;
     }
 }

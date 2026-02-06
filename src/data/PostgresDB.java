@@ -5,8 +5,7 @@ import java.sql.DriverManager;
 
 public class PostgresDB {
 
-    private static final String URL =
-            "jdbc:postgresql://localhost:5432/bookmyticket";
+    private static final String URL = "jdbc:postgresql://localhost:5432/bookmyticket";
     private static final String USER = "postgres";
     private static final String PASSWORD = "0000";
 
@@ -14,7 +13,7 @@ public class PostgresDB {
         try {
             return DriverManager.getConnection(URL, USER, PASSWORD);
         } catch (Exception e) {
-            e.printStackTrace();
+            System.out.println("❌ DB connection error: " + e.getMessage());
             return null;
         }
     }
