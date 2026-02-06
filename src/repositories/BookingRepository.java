@@ -10,7 +10,8 @@ import java.sql.ResultSet;
 public class BookingRepository {
 
     public boolean isSeatTaken(int flightId, String seatNumber) {
-        String sql = "SELECT 1 FROM bookings WHERE flight_id = ? AND seat_number = ? LIMIT 1";
+
+        String sql = "SELECT 1 FROM bookings WHERE flight_id = ? AND seat_number = ?";
 
         try (Connection con = PostgresDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -18,24 +19,21 @@ public class BookingRepository {
             ps.setInt(1, flightId);
             ps.setString(2, seatNumber);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                return rs.next();
-            }
+            ResultSet rs = ps.executeQuery();
+            return rs.next();
 
         } catch (Exception e) {
-            System.out.println("❌ Error checking seat: " + e.getMessage());
+            System.out.println("Seat check error");
             return true;
         }
     }
 
     public int saveAndReturnId(Booking b) {
-        String sql = """
-            INSERT INTO bookings
-            (flight_id, first_name, last_name, phone,
-             document_type, document_number, seat_number, ticket_class)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)
-            RETURNING id
-            """;
+
+        String sql =
+                "INSERT INTO bookings " +
+                        "(flight_id, first_name, last_name, phone, document_type, document_number, seat_number, ticket_class) " +
+                        "VALUES (?, ?, ?, ?, ?, ?, ?, ?) RETURNING id";
 
         try (Connection con = PostgresDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
@@ -49,18 +47,18 @@ public class BookingRepository {
             ps.setString(7, b.seatNumber);
             ps.setString(8, b.ticketClass);
 
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt("id");
-            }
+            ResultSet rs = ps.executeQuery();
+            if (rs.next()) return rs.getInt("id");
 
         } catch (Exception e) {
-            System.out.println("❌ Error saving booking: " + e.getMessage());
+            System.out.println("Save booking error");
         }
 
         return -1;
     }
 
     public boolean deleteById(int bookingId) {
+
         String sql = "DELETE FROM bookings WHERE id = ?";
 
         try (Connection con = PostgresDB.getConnection();
@@ -70,28 +68,27 @@ public class BookingRepository {
             return ps.executeUpdate() > 0;
 
         } catch (Exception e) {
-            System.out.println("❌ Error deleting booking: " + e.getMessage());
+            System.out.println("Delete error");
             return false;
         }
     }
 
     public int getFlightIdByBookingId(int bookingId) {
+
         String sql = "SELECT flight_id FROM bookings WHERE id = ?";
 
         try (Connection con = PostgresDB.getConnection();
              PreparedStatement ps = con.prepareStatement(sql)) {
 
             ps.setInt(1, bookingId);
+            ResultSet rs = ps.executeQuery();
 
-            try (ResultSet rs = ps.executeQuery()) {
-                if (rs.next()) return rs.getInt("flight_id");
-            }
+            if (rs.next()) return rs.getInt("flight_id");
 
         } catch (Exception e) {
-            System.out.println("❌ Error finding booking: " + e.getMessage());
+            System.out.println("Find booking error");
         }
 
         return -1;
     }
 }
-
