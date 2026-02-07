@@ -1,21 +1,12 @@
 package security;
 
+import models.Role;
+
 public class CurrentUser {
-    private static String username;
-    private static Role role;
+    private static Role role = Role.CASHIER;
 
-    public static void set(String u, Role r) {
-        username = u;
-        role = r;
-    }
-
-    public static String getUsername() { return username; }
+    public static void setRole(Role r) { role = r; }
     public static Role getRole() { return role; }
-
-    public static boolean hasAny(Role... roles) {
-        if (role == null) return false;
-        for (Role r : roles) if (role == r) return true;
-        return false;
-    }
+    public static boolean hasRole(Role r) { return role == r; }
 }
 

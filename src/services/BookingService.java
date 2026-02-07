@@ -1,118 +1,129 @@
 package services;
 
-import dto.BookingRequest;
 import dto.FullBookingDescription;
-import models.DocumentType;
-import models.TicketClass;
-import repositories.*;
+import repositories.RepositoryFactory;
+import utils.Console;
+import utils.Validator;
 
 public class BookingService {
 
+    private final Console console = new Console();
     private final RepositoryFactory factory = new RepositoryFactory();
-    private final FlightRepository flightRepo = factory.flightRepo();
-    private final SeatRepository seatRepo = factory.seatRepo();
-    private final UserRepository userRepo = factory.userRepo();
-    private final BookingRepository bookingRepo = factory.bookingRepo();
 
-    public Integer bookTicket(int flightId,
-                              String firstName, String lastName,
-                              String phone,
-                              String docType, String docNumber,
-                              String seat,
-                              String ticketClass) {
+    public void bookTicketWithCashierDialog() {
+        console.println("\nCashier: Hello! Welcome to BookMyTicket.");
+        console.println("Cashier: I can help you book a flight. (Type 0 anytime to cancel)");
 
-        BookingRequest r = new BookingRequest();
-        r.flightId = flightId;
-        r.firstName = firstName;
-        r.lastName = lastName;
-        r.phone = phone;
-        r.documentType = docType;
-        r.documentNumber = docNumber;
-        r.seatNumber = seat;
-        r.ticketClass = ticketClass;
+        Integer flightId = console.readIntCancelable("Cashier: Please enter flight id (0 = cancel): ");
+        if (flightId == null) { console.println("Cashier: Okay, canceled."); return; }
 
-        String err = validate(r);
-        if (err != null) {
-            System.out.println(" Validation error: " + err);
-            return null;
-        }
-
-        if (!flightRepo.exists(flightId)) {
-            System.out.println(" Flight not found.");
-            return null;
-        }
-
-        if (seatRepo.isSeatTaken(flightId, r.seatNumber)) {
-            System.out.println(" Seat already taken for this flight.");
-            return null;
-        }
-
-        Integer userId = userRepo.createUser(r.firstName, r.lastName, r.phone, r.documentType, r.documentNumber);
-        if (userId == null) return null;
-
-        String passengerName = r.firstName + " " + r.lastName;
-
-        return bookingRepo.createBooking(
-                flightId, userId, passengerName,
-                r.seatNumber, r.ticketClass,
-                r.documentType, r.phone, r.documentNumber
-        );
-    }
-
-    // business logic: refund 90%
-    public Integer cancelBookingRefund(int bookingId) {
-        Integer flightId = bookingRepo.getFlightIdIfBooked(bookingId);
-        if (flightId == null) return null;
-
-        Integer price = flightRepo.getPrice(flightId);
-        if (price == null) price = 0;
-
-        boolean ok = bookingRepo.cancelBooking(bookingId);
-        if (!ok) return null;
-
-        return (int)Math.round(price * 0.90);
-    }
-
-    public void printFullBooking(int bookingId) {
-        FullBookingDescription d = flightRepo.getFullBookingDescription(bookingId);
-        if (d == null) {
-            System.out.println("Not found.");
+        if (!factory.flightRepo().exists(flightId)) {
+            console.println("Cashier: Sorry, this flight does not exist.");
             return;
         }
-        System.out.println(d.pretty());
+
+        String firstName = console.readLineCancelable("Cashier: Passenger first name (0 = cancel): ");
+        if (firstName == null || !Validator.validName(firstName)) { console.println("Cashier: Canceled / invalid."); return; }
+
+        String lastName = console.readLineCancelable("Cashier: Passenger last name (0 = cancel): ");
+        if (lastName == null || !Validator.validName(lastName)) { console.println("Cashier: Canceled / invalid."); return; }
+
+        String phone = console.readLineCancelable("Cashier: Phone number (0 = cancel): ");
+        if (phone == null || !Validator.validPhone(phone)) { console.println("Cashier: Canceled / invalid phone."); return; }
+
+        String docType = console.readLineCancelable("Cashier: Document type (PASSPORT/ID_CARD) (0 = cancel): ");
+        if (docType == null || !Validator.validDocType(docType)) { console.println("Cashier: Canceled / invalid doc type."); return; }
+
+        String docNumber = console.readLineCancelable("Cashier: Document number (0 = cancel): ");
+        if (docNumber == null || !Validator.validDocNumber(docNumber)) { console.println("Cashier: Canceled / invalid doc number."); return; }
+
+        String seat = console.readLineCancelable("Cashier: Seat number (e.g. 8E) (0 = cancel): ");
+        if (seat == null || !Validator.validSeat(seat)) { console.println("Cashier: Canceled / invalid seat."); return; }
+
+        // проверка места (business logic)
+        if (factory.seatRepo().isSeatTaken(flightId, seat)) {
+            console.println("Cashier: Sorry, this seat is already taken for this flight.");
+            return;
+        }
+
+        String ticketClass = console.readLineCancelable("Cashier: Ticket class (ECONOMY/BUSINESS) (0 = cancel): ");
+        if (ticketClass == null || !Validator.validTicketClass(ticketClass)) { console.println("Cashier: Canceled / invalid class."); return; }
+
+        console.println("Cashier: Great! I am booking your ticket now...");
+        Integer userId = factory.userRepo().createUser(firstName, lastName, phone, docType, docNumber);
+        if (userId == null) {
+            console.println("Cashier: Sorry, could not create user.");
+            return;
+        }
+
+        String passengerName = firstName.trim() + " " + lastName.trim();
+
+        Integer bookingId = factory.bookingRepo().createBooking(
+                flightId, userId, passengerName,
+                seat, ticketClass, docType, phone, docNumber
+        );
+
+        if (bookingId == null) {
+            console.println("Cashier: Booking failed.");
+            return;
+        }
+
+        console.println("Cashier: Done! Your booking id is: " + bookingId);
+        console.println("Cashier: Here is your full booking receipt:\n");
+
+        FullBookingDescription d = factory.bookingRepo().getFullBooking(bookingId);
+        printReceipt(d);
     }
 
-    private String validate(BookingRequest r) {
-        if (r.flightId <= 0) return "flightId must be > 0";
-        if (r.firstName == null || r.firstName.trim().length() < 2) return "firstName too short";
-        if (r.lastName == null || r.lastName.trim().length() < 2) return "lastName too short";
+    public void cancelBookingWithRefund() {
+        console.println("\n--- CANCEL BOOKING ---");
+        Integer bookingId = console.readInt("Enter booking id: ");
+        if (bookingId == null) return;
 
-        if (r.phone == null || !r.phone.trim().matches("^\\+?\\d{10,15}$"))
-            return "phone must be 10-15 digits (may start with +)";
+        Integer flightId = factory.bookingRepo().getActiveFlightIdByBookingId(bookingId);
+        if (flightId == null) {
+            console.println("No active booking found.");
+            return;
+        }
 
-        String dt = r.documentType == null ? "" : r.documentType.trim().toUpperCase();
-        if (!("PASSPORT".equals(dt) || "ID_CARD".equals(dt))) return "documentType must be PASSPORT or ID_CARD";
+        Integer price = factory.flightRepo().getPrice(flightId);
+        if (price == null) price = 0;
 
-        if (r.documentNumber == null || r.documentNumber.trim().length() < 4) return "documentNumber too short";
+        boolean ok = factory.bookingRepo().cancelBooking(bookingId);
+        if (!ok) {
+            console.println("Cancel failed.");
+            return;
+        }
 
-        String seat = r.seatNumber == null ? "" : r.seatNumber.trim().toUpperCase();
-        if (!seat.matches("^\\d{1,2}[A-F]$")) return "seat format must be like 8E or 12A";
+        int refund = (int)Math.round(price * 0.9); // 90% refund
+        console.println("Canceled successfully. Refund: " + refund);
+    }
 
-        String tc = r.ticketClass == null ? "" : r.ticketClass.trim().toUpperCase();
-        if (!("ECONOMY".equals(tc) || "BUSINESS".equals(tc))) return "ticketClass must be ECONOMY or BUSINESS";
+    public void printFullBookingJoin() {
+        Integer bookingId = console.readInt("Enter booking id: ");
+        if (bookingId == null) return;
 
-        // normalize
-        r.firstName = r.firstName.trim();
-        r.lastName = r.lastName.trim();
-        r.phone = r.phone.trim();
-        r.documentType = dt;
-        r.ticketClass = tc;
-        r.seatNumber = seat;
+        FullBookingDescription d = factory.bookingRepo().getFullBooking(bookingId);
+        if (d == null) {
+            console.println("Not found.");
+            return;
+        }
+        printReceipt(d);
+    }
 
-        // enum safety
-        DocumentType.valueOf(dt);
-        TicketClass.valueOf(tc);
-
-        return null;
+    private void printReceipt(FullBookingDescription d) {
+        if (d == null) {
+            console.println("Receipt is empty.");
+            return;
+        }
+        console.println("=== BOOKING RECEIPT ===");
+        console.println("Booking: #" + d.bookingId + " | Status: " + d.status + " | " + d.createdAt);
+        console.println("Passenger: " + d.passengerName);
+        console.println("Phone: " + d.phone);
+        console.println("Document: " + d.documentType + " " + d.documentNumber);
+        console.println("Flight: " + d.origin + " -> " + d.destination + " | Category: " + d.category);
+        console.println("Seat: " + d.seatNumber + " | Class: " + d.ticketClass);
+        console.println("Price: " + d.price);
+        console.println("=======================");
     }
 }
